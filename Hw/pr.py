@@ -18,6 +18,21 @@ def convert_lower_case(tokens):
   lower_case_tokens = [token.lower() for token in tokens]
   return lower_case_tokens
 
+def lemmatize(words):
+  from pickle import load
+  file = open("lemmas.pkl","wb")
+  lemmas = load(file)
+  file.close()
+  
+  words_lemmatized = []
+  for word in words:
+    if word in words:
+      lemma = lemmas[word]
+      words_lemmatized.append(lemma)
+    else:
+      words_lemmatized.append(word)
+  return words_lemmatized
+
 def get_clean_tokens(tokens):
   import re
   clean_tokens = []
