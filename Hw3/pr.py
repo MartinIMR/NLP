@@ -11,6 +11,23 @@ def tokenize(fname):
   sentences = sent_tokenizer.tokenize(text_string)
   return sentences
 
+def clean_tokens(sentences):
+  clean_sentences = []
+  for sentence in sentences:
+    print("-------SENTENCE--------")
+    print(sentence)
+    print("------END-------")
+    tokens = nltk.word_tokenize(sentence)
+    print("----------TOKENS-------")
+    print(tokens)
+    print("----------END-------")
+    new_sentence = ""
+    for token in tokens:
+      new_sentence = []
+      cleaned = re.sub("![a-záéíóúñü]","")
+
+  return clean_sentences
+
 def tag_sentences(sentences):
   from pickle import load
   input = open("tagger.pkl","rb")
@@ -25,7 +42,6 @@ def tag_sentences(sentences):
 
 if __name__=='__main__':
   file_name = "e960401_mod.htm"
-  r_sentences = tokenize(file_name) #Getting the text string 
-  tagged_words = tag_sentences(r_sentences) #Tag sentences
-  print("Tagged list has:",len(tagged_words)," elements")
-  print(tagged_words[:200])
+  r_sentences = tokenize(file_name) #First tokenization (Remove tags and tokenize)
+  c_sentences = clean_tokens(r_sentences) #Remove non words and stopwords
+  #tagged_words = tag_sentences(r_sentences) #Tag sentences
