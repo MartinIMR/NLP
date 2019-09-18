@@ -1,4 +1,5 @@
 import nltk
+import numpy as np
 from bs4 import BeautifulSoup
 
 def tokenize(fname):
@@ -23,6 +24,35 @@ def tag_sentences(sentences):
     tagged = tagged + s_tagged
   return tagged
 
+def clean_tokens(sentences):
+  from nltk.corpus import stopwords
+  sw = stopwords.words("spanish")
+  clean_sentences = []
+  for sentence in sentences:
+   print("-------ORIGINAL SENTENCE--------")
+   print(sentence)
+   print("------END-------")
+   tokens = nltk.word_tokenize(sentence)
+   print("---------- RAW TOKENS-------")
+   print(tokens)
+   print("----------END-------")
+   tokens = [word for word in tokens if word not in sw] 
+   print("----------NO SW TOKENS-------")
+   print(tokens)
+   print("----------END-------")
+   new_sentence = []
+   for token in tokens:
+    cleaned = re.sub("![a-záéíóúñü]","",token)
+    if(token != ""):
+     new_sentence.append(cleaned)
+   new_sentence = " ".join(new_sentence)
+   print("-------CLEAN SENTENCE--------")
+   print(new_sentence)
+   print("------END-------")
+   clean_sentences = cleaned_sentences + new_sentence
+  return clean_sentences
+
+
 def lemmatization(pairs):
   from pickle import load 
   input = open("lemmas.pkl","rb")
@@ -36,14 +66,13 @@ def lemmatization(pairs):
      lemma_dict.append(lemma)
   return lemma_dict
 
-def get_context_list(word,tagged_words):
+def get_context(word,source):
   window = 8
-  bound = len(tagged_words)
+  bound = len(source)
   moves = (window//2)
   context_list = []
-  for pair in tagged_words:
-    if word == pair[0]:
-     index = tagged_words.index(pair)
+  for index in range(bound):
+    if word == source[index]:
      min = index - moves
      max = index + moves + 1
      if min < 0:
@@ -51,19 +80,34 @@ def get_context_list(word,tagged_words):
      if max > bound:
       max = bound
      ady_list = []
-     print("The word index is:",index)
      for i in range(min,max): #Ocurrences
        if i != index:
-         print("The word in position:",i,"is added")
-         ady_list.append(tagged_words[i]) 
+        ady_list.append(source[i]) 
      context_list = context_list + ady_list 
   return context_list
 
+def get_context_dict(vocabulary,lemma_dict):
+  cont_dict = {}
+  for i in range(len(vocabulary)):
+    entry = vocabulary[i]
+    cont_dict[entry] = get_context(entry,lemma_dict)
+  return cont_dict
+
+def create_vdict(vocabulary):
+ dimension = len(vocabulary) #Dimension of the vector
+ vec_dict = {}
+ #for each word set a vector in dictionary
+ for word in vocabulary:
+  vec_dict[word] = np.zeros(dimension, dtype=int)
+ return vec_dict
+
+
 if __name__=='__main__':
   file_name = "e960401_mod.htm"
-  r_sentences = tokenize(file_name) #Getting the text string 
-  tagged_words = tag_sentences(r_sentences) #Tag sentences
-  lemma_dict = lemmatization(tagged_words)
-  vocabulary = set(lemma_dict)
-  lista = get_context_list("caminar",tagged_words)
-  print(lista)
+  r_sentences = tokenize(file_name) #Getting the text string
+  clean_sentences = clean_tokens(r_sentences)
+  #tagged_words = tag_sentences(r_sentences) #Tag sentences
+  #lemma_dict = lemmatization(tagged_words)
+  #vocabulary = sorted(set(lemma_dict))
+  #vectors_dictionary = create_vdict(vocabulary) #Create vector's dictionary
+  #context_dictionary = get_context_dict(vocabulary,lemma_dict)
