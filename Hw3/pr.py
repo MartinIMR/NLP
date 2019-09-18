@@ -30,29 +30,16 @@ def clean_tokens(sentences):
   sw = stopwords.words("spanish")
   clean_sentences = []
   for sentence in sentences:
-   print("-------ORIGINAL SENTENCE--------")
-   print(sentence)
-   print("------END-------")
    tokens = nltk.word_tokenize(sentence)
-   print("---------- RAW TOKENS-------")
-   print(tokens)
-   print("----------END-------")
    tokens = [token.lower() for token in tokens]
    tokens = [word for word in tokens if word not in sw] 
-   print("----------NO SW TOKENS-------")
-   print(tokens)
-   print("----------END-------")
    new_sentence = []
    for token in tokens:
     cleaned = re.sub("[^(a-záéíóúñü)]","",token) #Leave only simple words
     if(cleaned != ""):
      new_sentence.append(cleaned)
    new_sentence = " ".join(new_sentence)
-   print("-------CLEAN SENTENCE--------")
-   print(new_sentence)
-   print("------END-------")
    clean_sentences.append(new_sentence)
-  print(clean_sentences[:5])
   return clean_sentences
 
 
@@ -61,13 +48,18 @@ def lemmatization(pairs):
   input = open("lemmas.pkl","rb")
   lemmas = load(input)
   input.close()
-  lemma_dict = []
+  lemma_list = []
   for pair in pairs:
-    key = pair[0]+" "+pair[1][0] #Word and category
+    word = pair[0]
+    category = pair[1][0]
+    key = word+" "+category #Word and category
     if key in lemmas: 
-     lemma = lemmas[key]
-     lemma_dict.append(lemma)
-  return lemma_dict
+     tuple = (lemmas[key],category.lower())
+     lemma_list.append(tuple)
+    else:
+     tuple = (word,category.lower())
+     lemma_list.append(tuple)
+  return lemma_list
 
 def get_context(word,source):
   window = 8
@@ -75,7 +67,7 @@ def get_context(word,source):
   moves = (window//2)
   context_list = []
   for index in range(bound):
-    if word == source[index]:
+    if word == source[index][0]:
      min = index - moves
      max = index + moves + 1
      if min < 0:
@@ -89,11 +81,13 @@ def get_context(word,source):
      context_list = context_list + ady_list 
   return context_list
 
-def get_context_dict(vocabulary,lemma_dict):
+def get_cdict(vocabulary,lemma_list):
   cont_dict = {}
   for i in range(len(vocabulary)):
     entry = vocabulary[i]
-    cont_dict[entry] = get_context(entry,lemma_dict)
+    cont_dict[entry] = get_context(entry,lemma_list)
+    print("The word:",entry," has the following context list:")
+    print(cont_dict[entry])
   return cont_dict
 
 def create_vdict(vocabulary):
@@ -104,13 +98,29 @@ def create_vdict(vocabulary):
   vec_dict[word] = np.zeros(dimension, dtype=int)
  return vec_dict
 
+def get_vocabulary(lemma_list):
+ vocabulary = []
+ for pair in lemma_list:
+  vocabulary.append(pair[0])
+ vocabulary = sorted(set(vocabulary))
+ return vocabulary
+
+def get_vectors(vocabulary,v_dict,c_dict):
+ for i in range(len(vocabulary)):
+  entry = vocabulary[i]
+  vector = v_dict[entry]
+  context = c_dict[entry]
+  for pair in context:
+  category = pair[1]
+
 
 if __name__=='__main__':
   file_name = "e960401_mod.htm"
   r_sentences = tokenize(file_name) #Getting the text string
-  clean_sentences = clean_tokens(r_sentences)
-  #tagged_words = tag_sentences(r_sentences) #Tag sentences
-  #lemma_dict = lemmatization(tagged_words)
-  #vocabulary = sorted(set(lemma_dict))
-  #vectors_dictionary = create_vdict(vocabulary) #Create vector's dictionary
-  #context_dictionary = get_context_dict(vocabulary,lemma_dict)
+  clean_sentences = clean_tokens(r_sentences) #Removing stopwords, and no words.
+  tagged_words = tag_sentences(clean_sentences) #Tag sentences
+  lemma_list = lemmatization(tagged_words) #Lemmatization
+  vocabulary = get_vocabulary(lemma_list) #Obtain vocabulary
+  vectors_dict = create_vdict(vocabulary) #Create vector's dictionary
+  context_dict = get_cdict(vocabulary,lemma_list) #Get ocurrences's dictionary
+  vectors_dict = get_vectors() 
