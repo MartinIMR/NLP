@@ -25,6 +25,7 @@ def tag_sentences(sentences):
   return tagged
 
 def clean_tokens(sentences):
+  import re
   from nltk.corpus import stopwords
   sw = stopwords.words("spanish")
   clean_sentences = []
@@ -36,20 +37,22 @@ def clean_tokens(sentences):
    print("---------- RAW TOKENS-------")
    print(tokens)
    print("----------END-------")
+   tokens = [token.lower() for token in tokens]
    tokens = [word for word in tokens if word not in sw] 
    print("----------NO SW TOKENS-------")
    print(tokens)
    print("----------END-------")
    new_sentence = []
    for token in tokens:
-    cleaned = re.sub("![a-záéíóúñü]","",token)
-    if(token != ""):
+    cleaned = re.sub("[^(a-záéíóúñü)]","",token) #Leave only simple words
+    if(cleaned != ""):
      new_sentence.append(cleaned)
    new_sentence = " ".join(new_sentence)
    print("-------CLEAN SENTENCE--------")
    print(new_sentence)
    print("------END-------")
-   clean_sentences = cleaned_sentences + new_sentence
+   clean_sentences.append(new_sentence)
+  print(clean_sentences[:5])
   return clean_sentences
 
 
