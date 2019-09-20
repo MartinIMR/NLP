@@ -66,9 +66,17 @@ def calc_bm25(word,context):
  size = len(context)
  average = get_avg(context_dict)
  numerator = (k+1)*count
- denominator = count + k*( (1-b) + b*(average/numerator))
+ denominator = count + k*( (1-b) + b*(size/average))
  bm25 = numerator / denominator
  return bm25
+
+def bm25_dict(context_dict):
+ key_list = context_dict.keys()
+ vector_dic = {}
+ for key in key_list: # Each key is a pair
+  context = context_dict[key]
+  vector_dict[key] = bm25_vector(context_dict,context)
+ return vector_dic
 
 def bm25_vector(context_dict,context):
  key_list = context_dict.keys()
@@ -117,7 +125,7 @@ def get_context(pair,source):
 if __name__=='__main__':
    lemma_list = load_data("lemma_list.pkl")
    vocabulary = load_data("vocabulary.pkl")
-   vectors_dict = create_vdict(vocabulary) #Create vector's dictionary
+   #vectors_dict = create_vdict(vocabulary) #Create vector's dictionary
    context_dict = get_cdict(vocabulary,lemma_list) #Get ocurrences's dictionary
    word = "crecer" 
    entry = get_entry(word,vocabulary)
@@ -128,5 +136,9 @@ if __name__=='__main__':
    #count_freq(vocabulary,vectors_dict,context_dict) #Raw frequency 
    #save_data(vectors_dict,"count_vectors.pkl")
    """ EOWC frequency """
-   eowc_freq(vocabulary,vectors_dict,context_dict) #EOWC frequency
-   save_data(vectors_dict,"eowc_vectors.pkl")
+   #eowc_freq(vocabulary,vectors_dict,context_dict) #EOWC frequency
+   #save_data(vectors_dict,"eowc_vectors.pkl")
+   """ BM25 frequency """
+   #vectors_dict = bm25_freq(context_dict)
+   #save_data(vectors_dict,"eowc_vectors.pkl")
+
