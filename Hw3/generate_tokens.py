@@ -65,11 +65,47 @@ def get_vocabulary(lemma_list):
  vocabulary = sorted(vocabulary, key = lambda tup:tup[0])
  return vocabulary
 
+def get_cdict(vocabulary,lemma_list):
+  cont_dict = {}
+  for i in range(len(vocabulary)):
+    entry = vocabulary[i]
+    cont_dict[entry] = get_context(entry,lemma_list)
+  return cont_dict
+
+def get_context(pair,source):
+  word = pair[0]
+  window = 8
+  bound = len(source)
+  moves = (window//2)
+  context_list = []
+  for index in range(bound):
+    if word == source[index][0]:
+     min = index - moves
+     max = index + moves + 1
+     if min < 0:
+      min = 0
+     if max > bound:
+      max = bound
+     ady_list = []
+     for i in range(min,max): #Ocurrences
+       if i != index:
+        ady_list.append(source[i]) 
+     context_list = context_list + ady_list 
+  return context_list
+
 def save_data(data,name):
     from pickle import dump
     output = open(name,"wb")
     dump(data,output, -1) #mete bytes en archivo nuestro diccionario de lemmas
     output.close()
+
+def load_data(file_name):
+  from pickle import load 
+  input = open(file_name,"rb")
+  data = load(input)
+  input.close()
+  return data
+
    
 if __name__=='__main__':
     file_name = "e960401_mod.htm"
@@ -82,3 +118,6 @@ if __name__=='__main__':
     save_data(lemma_list,"lemma_list.pkl")
     vocabulary = get_vocabulary(lemma_list) #Obtain vocabulary
     save_data(vocabulary,"vocabulary.pkl")
+    context_dict = get_cdict(vocabulary,lemma_list) #Get ocurrences's dictionary
+    save_data(context_dict,"context_dic.pkl")
+
