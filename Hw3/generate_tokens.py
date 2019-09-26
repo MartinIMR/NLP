@@ -119,5 +119,5 @@ if __name__=='__main__':
     vocabulary = get_vocabulary(lemma_list) #Obtain vocabulary
     save_data(vocabulary,"vocabulary.pkl")
     context_dict = get_cdict(vocabulary,lemma_list) #Get ocurrences's dictionary
-    save_data(context_dict,"context_dic.pkl")
+    save_data(context_dict,"context_dict.pkl")
 

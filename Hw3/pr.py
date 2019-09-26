@@ -9,6 +9,16 @@ def load_data(file_name):
   input.close()
   return data
 
+def get_bm25vec(word,vocabulary,context_dict):
+ k = 1.5
+ b = 0.75
+ dimension = len(vocabulary)
+ len_vec = create_lenvec(context_dict)
+ average = np.sum(len_vec)/dimension
+ modified = k * ( (1 - b) + (b*len_vec) ) # The same
+ pair = get_entry(word,vocabulary)
+ 
+
 def convert_list(dict):
  list = []
  for key in dict.keys():
