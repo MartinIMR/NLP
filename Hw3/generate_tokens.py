@@ -42,6 +42,26 @@ def tag_sentences(sentences):
     tagged = tagged + s_tagged
   return tagged
 
+def lemmatize_sentences(sentences):
+  from pickle import load
+  input = open("extern/olemmas.pkl","rb")
+  lemmas = load(input)
+  input.close()
+  lemmatized_sentences = []
+  for sentence in sentences:
+    lemmatized = []
+    words = nltk.word_tokenize(sentence)
+    words = [ word.lower() for word in words ]
+    for word in words:
+     if word in lemmas:
+       lemma = lemmas[word]
+       lemmatized.append(lemma)
+     else:
+       lemmatized.append(word)
+    lemmatized = " ".join(lemmatized) 
+    lemmatized_sentences.append(lemmatized)
+  return lemmatized_sentences
+
 def lemmatization(pairs):
   from pickle import load 
   input = open("lemmas.pkl","rb")
@@ -120,4 +140,9 @@ if __name__=='__main__':
     save_data(vocabulary,"vocabulary.pkl")
     context_dict = get_cdict(vocabulary,lemma_list) #Get ocurrences's dictionary
     save_data(context_dict,"context_dict.pkl")
-
+    """ # Generation of lemmatized sentences 
+    clean_sentences = load_data("words/clean_sentences.pkl")
+    lemmatized_sentences = lemmatize_sentences(clean_sentences)
+    save_data(lemmatized_sentences,"words/lemmatized_sentences.pkl")
+    print(lemmatized_sentences[:30])
+    """

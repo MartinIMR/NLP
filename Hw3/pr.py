@@ -17,7 +17,6 @@ def get_bm25vec(word,vocabulary,context_dict):
  average = np.sum(len_vec)/dimension
  modified = k * ( (1 - b) + (b*len_vec) ) # The same
  pair = get_entry(word,vocabulary)
- 
 
 def convert_list(dict):
  list = []
@@ -35,6 +34,19 @@ def print_relations(entry,relations):
    key_cat = key[1]
    if category == key_cat:
     print(key[0],":",relations[key])
+
+def print_relation(vocabulary,vector):
+  dimension = len(vocabulary)
+  ordenado = []
+  for i in range(dimension):
+    tupla = (vector[i],i)
+    ordenado.append(tupla)
+  ordenado = sorted(ordenado,key = lambda tup:tup[0],reverse=True)
+  for i in range(dimension//2): #Print half
+    pair = ordenado[i]
+    if(pair[0] == 0.0):
+      break
+    print(vocabulary[pair[1]][0],":",pair[0])
 
 def search_entry(word,vocabulary):
  for i in range(len(vocabulary)):
@@ -69,28 +81,6 @@ def okapi_sim(vec1,vec2,idf_v):
  sum = np.sum(mul_vec)
  return sum
 
-def idf_vector(context_dict):
-  context_keys = list(context_dict.keys())
-  m = len(context_keys) 
-  vector = np.zeros(m, dtype=float)
-  for i in range(m):
-   vector[i] = m+1
-  vector = np.log( (vector + 1) )
-  for i in range(m):
-    k = 0
-    word = context_keys[i]
-    for key in context_dict.keys():
-     context = context_dict[key]
-     if word in context:
-      k = k + 1
-    vector[i] = vector[i]/k
-  return vector
-
-def norm_dict(bm_dic,idf_vec):
-  norm_dic = {}
-  for key in bm_dic.keys():
-    norm_dic[key] = np.multiply(bm_dic[key],idf_vec)
-  return norm_dic
 
 def save_data(data,name):
     from pickle import dump
@@ -99,59 +89,17 @@ def save_data(data,name):
     output.close()
 
 if __name__=='__main__':
-  """
-  vocabulary = load_data("vocabulary.pkl")
-  context_dict = load_data("context_dic.pkl")
-  #vectors_dict = load_data("bm25_vectors.pkl") #Create vector's dictionary
-  #sought = "haber"
-  #entry = search_entry(sought,vectors_dict) # Search for pair of the word 
-  #Creating idf vector 
-  #idf_v = idf_vector(context_dict)
-  #save_data(idf_v,"idf_vector.pkl")
-  #Loading idf vector
-  idf_v = load_data("idf_vector.pkl")
-  bm25_dict = load_data("bm25_vectors.pkl")
-  word1 = "dólar"
-  entry1 = search_entry(word1,vocabulary)
-  word2 = "ver"
-  entry2 = search_entry(word2,vocabulary)
-  vec1 = bm25_dict[entry1]
-  vec2 = bm25_dict[entry2]
-  simil = okapi_sim(vec1,vec2,idf_v)
-  print("Sim between ",word1," and ",word2," is:")
-  print(simil)
-  """
-
-  vocabulary = load_data("vocabulary.pkl")
-  context_dict = load_data("context_dic.pkl")
-
+  vocabulary = load_data("words/vocabulary.pkl")
+  context_dict = load_data("vectors/context_dict.pkl")
+  bm25n_dict = load_data("vectors/normalized_dict.pkl")
+  idf_vector = load_data("vectors/idf_vector.pkl")
+  dimension = len(vocabulary)
   """ WORD """
   word = "dólar"
   entry = search_entry(word,vocabulary)
-  """ LIST 1:POS and RAW FREQUENCY """
-  raw_dict = load_data("count_vectors.pkl") 
-  dicsim_coseno = cos_dict(entry,raw_dict)
-  list_cos = convert_list(dicsim_coseno)
-  print("For the word:",word)
-  print("\n")
-  print("Coseno similitud:")
-  print(list_cos[:200])
+  """ Syn. Relation """
+  bm25n_vector = bm25n_dict[entry]
+  syn = np.multiply(bm25n_vector,idf_vector)
+  print("For the word:",word,".We have the following relations")
+  print_relation(vocabulary,syn)
   
-  """ LIST 2:IDF FREQUENCY """
-  print("\n")
-  bm_dict = load_data("bm25_vectors.pkl") 
-  idf_vec = load_data("idf_vector.pkl") 
-  dicsim_okapi = okapi_dict(entry,bm_dict,idf_vec)
-  list_bm = convert_list(dicsim_okapi)
-  print("BM25 similitud:")
-  print(list_bm[:200])
-  print("\n")
-
-  """ LIST 3:COS AND IDF """
-  print("\n")
-  bmnorm_dict = norm_dict(bm_dict,idf_vec)
-  dicsim_mix = cos_dict(entry,bmnorm_dict)
-  list_nbm = convert_list(dicsim_mix)
-  print("COS and BM25 similitud:")
-  print(list_nbm[:200])
-
