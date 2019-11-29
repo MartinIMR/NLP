@@ -38,6 +38,18 @@ def remove_nowords(text):
     new_text.append(new_sentence)
   return new_text
 
+def tag_text(text):
+ from pickle import load
+  input = open("tagger.pkl","rb")
+  tagger = load(input)
+  input.close()
+  tagged = []
+  for sent in sentences:
+    tokens = nltk.word_tokenize(sent)
+    s_tagged = tagger.tag(tokens)
+    tagged = tagged + s_tagged
+  return tagged 
+
 if __name__ == "__main__":
   folder = "moviles/"
   reviews = []
